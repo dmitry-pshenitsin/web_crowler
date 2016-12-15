@@ -1,64 +1,97 @@
-# incorrect4 = [['a', 'b', 'c'],
-#               ['b', 'c', 'f'],
-#               ['c', 'a', 'b']]
-#
-# incorrect5 = [[1, 1.5],
-#               [1.5, 1]]
-#
-# incorrect2 = [[1,2,3,4],
-#              [2,3,1,4],
-#              [4,1,2,3],
-#              [3,4,1,2]]
-#
-#
-# def check_sudoku(sud):
-#     n = len(sud)
-#     k = [[] for i in range(n)]
-#     for r in sud:
-#         for i in range(0, n):
-#             k[i].append(r[i])
-#     for i in range(n):
-#         for j in range(1, n + 1):
-#             if sud[i].count(j) != 1 or k[i].count(j) != 1:
-#                 return False
-#     return True
-#
-#
-# print(check_sudoku(incorrect4))
-# print(check_sudoku(incorrect2))
-#
-#
-# def numbers_in_lists(string):
-#     if string == []:
-#         return []
-#     sublist = []
-#     max_el = 0
-#     result = []
-#     for i in string:
-#         k = int(i)
-#         if k > max_el:
-#             if sublist != []:
-#                 result.append(sublist)
-#                 sublist = []
-#             max_el = k
-#             result.append(max_el)
-#             continue
-#         sublist.append(k)
-#     if sublist != []:
-#         result.append(sublist)
-#     return result
-#
-# print(len('ops'))
-# op = 'ops'
-# print(op.count('o'))
-#
-#
-# print(numbers_in_lists('543987'))
-#
-# print(round(0.8**6, 2))
+def record_user_click(index,keyword,url):
 
-addo = []
-if addo[0] == 5:
-    print('hi')
-print('ho')
+
+def add_to_index(index, keyword, url):
+    for entry in index:
+        if entry[0] == keyword:
+            entry[1].append(url)
+            return
+    # not found, add new keyword to index
+    index.append([keyword, [url]])
+
+
+def get_page(url):
+    try:
+        if url == "http://www.udacity.com/cs101x/index.html":
+            return '''<html> <body> This is a test page for learning to crawl!
+<p> It is a good idea to
+<a href="http://www.udacity.com/cs101x/crawling.html">
+learn to crawl</a> before you try to
+<a href="http://www.udacity.com/cs101x/walking.html">walk</a> or
+<a href="http://www.udacity.com/cs101x/flying.html">fly</a>.</p></body></html>'''
+
+        elif url == "http://www.udacity.com/cs101x/crawling.html":
+            return '''<html> <body> I have not learned to crawl yet, but I am
+quite good at  <a href="http://www.udacity.com/cs101x/kicking.html">kicking</a>.
+</body> </html>'''
+
+        elif url == "http://www.udacity.com/cs101x/walking.html":
+            return '''<html> <body> I cant get enough
+<a href="http://www.udacity.com/cs101x/index.html">crawling</a>!</body></html>'''
+
+        elif url == "http://www.udacity.com/cs101x/flying.html":
+            return '<html><body>The magic words are Squeamish Ossifrage!</body></html>'
+    except:
+        return ""
+    return ""
+
+def union(a, b):
+    for e in b:
+        if e not in a:
+            a.append(e)
+
+def get_next_target(page):
+    start_link = page.find('<a href=')
+    if start_link == -1:
+        return None, 0
+    start_quote = page.find('"', start_link)
+    end_quote = page.find('"', start_quote + 1)
+    url = page[start_quote + 1:end_quote]
+    return url, end_quote
+
+def get_all_links(page):
+    links = []
+    while True:
+        url, endpos = get_next_target(page)
+        if url:
+            links.append(url)
+            page = page[endpos:]
+        else:
+            break
+    return links
+
+def crawl_web(seed):
+    tocrawl = [seed]
+    crawled = []
+    index = []
+    while tocrawl:
+        page = tocrawl.pop()
+        if page not in crawled:
+            content = get_page(page)
+            add_page_to_index(index, page, content)
+            union(tocrawl, get_all_links(content))
+            crawled.append(page)
+    return index
+
+def add_page_to_index(index, url, content):
+    words = content.split()
+    for word in words:
+        add_to_index(index, word, url)
+
+def lookup(index, keyword):
+    for entry in index:
+        if entry[0] == keyword:
+            return entry[1]
+    return None
+
+
+#Here is an example showing a sequence of interactions:
+index = crawl_web('http://www.udacity.com/cs101x/index.html')
+print lookup(index, 'good')
+#>>> [['http://www.udacity.com/cs101x/index.html', 0],
+#>>> ['http://www.udacity.com/cs101x/crawling.html', 0]]
+record_user_click(index, 'good', 'http://www.udacity.com/cs101x/crawling.html')
+print lookup(index, 'good')
+#>>> [['http://www.udacity.com/cs101x/index.html', 0],
+#>>> ['http://www.udacity.com/cs101x/crawling.html', 1]]
 
